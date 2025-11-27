@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vector + Graph Hybrid DB</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+      body {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+      }
+      h1 {
+        margin-bottom: 0.5rem;
+      }
+      p.lead {
+        margin-top: 0;
+        color: #475569;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1rem 0 2rem;
+      }
+      .controls input,
+      .controls select {
+        flex: 1;
+        min-width: 220px;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #cbd5f5;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      button {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      button:disabled {
+        opacity: 0.5;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 6px 30px rgba(15, 23, 42, 0.08);
+      }
+      .card h3 {
+        margin: 0;
+      }
+      .meta {
+        display: inline-flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .badge {
+        background: #e0e7ff;
+        color: #312e81;
+        border-radius: 6px;
+        padding: 0.1rem 0.45rem;
+        font-size: 0.8rem;
+      }
+      .score {
+        color: #0ea5e9;
+        font-weight: 600;
+      }
+      .reason {
+        color: #475569;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⚡ Vector + Graph Hybrid DB</h1>
+    <p class="lead">
+      Compare semantic-only retrieval vs. graph-boosted hybrid scoring using a local Marvel-inspired
+      knowledge base.
+    </p>
+    <div class="controls">
+      <input id="query" type="text" placeholder="Try 'weapon to stop thanos'" />
+      <select id="alpha">
+        <option value="1.0">Vector only</option>
+        <option value="0.7" selected>Hybrid (0.7 / 0.3)</option>
+        <option value="0.5">Balanced</option>
+        <option value="0.3">Graph heavy</option>
+      </select>
+      <select id="topK">
+        <option value="3">Top 3</option>
+        <option value="5" selected>Top 5</option>
+        <option value="8">Top 8</option>
+      </select>
+      <button id="searchBtn" onclick="runSearch()">Search</button>
+    </div>
+    <section id="results"></section>
+    <script>
+      async function runSearch() {
+        const btn = document.getElementById("searchBtn");
+        btn.disabled = true;
+        const query = document.getElementById("query").value.trim();
+        const alpha = parseFloat(document.getElementById("alpha").value);
+        const topK = parseInt(document.getElementById("topK").value, 10);
+        const res = await fetch("/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, alpha, top_k: topK })
+        });
+        const data = await res.json();
+        render(data.results || []);
+        btn.disabled = false;
+      }
+
+      function render(results) {
+        const container = document.getElementById("results");
+        if (!results.length) {
+          container.innerHTML = "<p>No results yet. Run a search.</p>";
+          return;
+        }
+        container.innerHTML = results
+          .map(
+            (item) => `
+          <article class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3>${item.id}</h3>
+              <span class="score">${item.score}</span>
+            </div>
+            <p>${item.text}</p>
+            <div class="meta">
+              ${Object.entries(item.metadata || {})
+                .map(([key, value]) => `<span class="badge">${key}: ${value}</span>`)
+                .join("")}
+            </div>
+            <p class="reason">
+              Reason: ${item.reason} (vec: ${item.vector_score}, graph: ${item.graph_boost})
+            </p>
+          </article>
+        `
+          )
+          .join("");
+      }
+    </script>
+  </body>
+</html>
+
+

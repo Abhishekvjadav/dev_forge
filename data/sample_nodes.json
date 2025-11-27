@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {
+      "text": "Graph databases capture rich relationships between research papers.",
+      "metadata": {
+        "topic": "graph",
+        "source": "wiki"
+      }
+    },
+    {
+      "text": "Vector embeddings encode semantic similarity for neural retrieval.",
+      "metadata": {
+        "topic": "vector",
+        "source": "wiki"
+      }
+    },
+    {
+      "text": "Hybrid retrieval mixes structure-aware graph traversal with embeddings.",
+      "metadata": {
+        "topic": "hybrid",
+        "source": "notes"
+      }
+    }
+  ]
+}
+
